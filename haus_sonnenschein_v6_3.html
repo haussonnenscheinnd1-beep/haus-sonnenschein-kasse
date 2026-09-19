@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Haus Sonnenschein – V6.3</title>
+<style>
+:root{--sun:#fab438;--bg:#242321;--card:#302e2a;--text:#f7f2e8;--muted:#b9b2a6;--line:#4b463e;--open:#5a4b20;--paid:#284a31}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.app{max-width:1100px;margin:auto;padding:14px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+h1,h2,h3{margin:.2em 0}.logo{font-weight:800;font-size:24px}.logo span{color:var(--sun)}
+button,input,select{font:inherit} button{border:0;border-radius:16px;padding:14px 16px;min-height:54px;cursor:pointer;touch-action:manipulation;-webkit-user-select:none}
+button:active{transform:scale(.98)} .topbtn{background:#35322d;color:var(--text);border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}.stat b{display:block;font-size:24px;margin-top:4px}.stat small{color:var(--muted)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:14px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap}.primary{background:var(--sun);font-weight:800}.secondary{background:#403c35;color:var(--text)}.danger{background:#713d3d;color:#fff}
+.people{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.person{width:100%;text-align:left;border:2px solid #806f32;background:var(--open);position:relative;padding-right:52px}
+.person.paid{background:var(--paid);border-color:#4f8b5c}.person .amount{display:block;font-size:20px;font-weight:800;margin-top:4px}.badge{position:absolute;right:12px;top:14px;font-size:24px}
+.empty{padding:25px;text-align:center;color:var(--muted)} .hidden{display:none!important}
+.back{background:#403c35;color:var(--text);margin-bottom:10px}.order-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.total{font-size:30px;font-weight:900;white-space:nowrap}
+.categories{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.category{border:1px solid var(--line);border-radius:18px;padding:12px}.category h3{margin-top:0}
+.products{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.product{background:#3a3732;color:var(--text);border:1px solid var(--line);text-align:left;min-height:64px}.product strong{display:block;font-size:17px}.product small{color:var(--muted)}
+.cart{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}.line{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #f0e8da}.line button{min-height:42px;padding:7px 10px;background:#403c35;color:var(--text)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.actions .pay{background:var(--sun);font-weight:900}.actions .cancel{background:#403c35;color:var(--text)}
+.history{margin-top:18px}.history-item{padding:10px 0;border-bottom:1px solid var(--line)}.history-item small{color:var(--muted)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center;padding:10px;z-index:20}
+.dialog{background:#302e2a;color:var(--text);border-radius:22px;padding:18px;width:min(620px,100%);max-height:92vh;overflow:auto;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+label{display:block;font-weight:700;margin:10px 0 5px} input,select{width:100%;min-height:52px;border:1px solid #5a544a;border-radius:13px;padding:10px;background:#242321;color:var(--text)}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dialog-actions{display:flex;gap:10px;margin-top:16px}.dialog-actions>*{flex:1}.note{color:var(--muted);font-size:14px;margin-top:8px}
+@media(max-width:700px){.people{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:1fr 1fr}.categories{grid-template-columns:1fr}.app{padding:10px}.total{font-size:26px}}
+@media(max-width:430px){.stat:last-child{grid-column:1/-1}.products{grid-template-columns:1fr 1fr}.formgrid{grid-template-columns:1fr}}
+/* iOS/Safari touch stability */
+button{-webkit-appearance:none;appearance:none}
+button,input,select{-webkit-tap-highlight-color:transparent}
+
+</head>
+<body>
+<noscript><div style="padding:16px;background:#713d3d;color:#fff;font-weight:700">JavaScript ist deaktiviert. Bitte diese Seite in Safari/Chrome mit aktiviertem JavaScript öffnen.</div></noscript>
+<div id="jsError" class="hidden" style="margin-bottom:12px;padding:12px;border-radius:14px;background:#713d3d;color:#fff;font-weight:700">Ein Fehler ist aufgetreten. Seite bitte neu laden.</div>
+<div class="app">
+<header><div class="logo">☀️ Haus <span>Sonnenschein</span></div><button class="topbtn" id="manageBtn">⚙️ Verwaltung</button></header>
+
+<section id="dashboard">
+<div class="stats">
+<div class="stat"><small>Umsatz heute</small><b id="salesToday">0,00 €</b></div>
+<div class="stat"><small>Stimmt so heute</small><b id="tipsToday">0,00 €</b></div>
+<div class="stat"><small>Eingenommen heute</small><b id="receivedToday">0,00 €</b></div>
+<div class="stat"><small>Noch offen</small><b id="openCount">0</b></div>
+</div>
+<div class="panel"><button class="primary" id="addPersonBtn">＋ Person hinzufügen</button></div>
+<div class="panel"><h2>Gästeliste</h2><div id="people" class="people"></div></div>
+</section>
+
+<section id="orderPage" class="hidden">
+<button class="back" id="backPeople">← Zur Gästeliste</button>
+<div class="panel">
+<div class="order-head"><div><h2 id="orderPerson"></h2><small>Aktueller Auftrag</small></div><div class="total" id="orderTotal">0,00 €</div></div>
+<div class="categories">
+<div class="category"><h3>🥤 Getränke</h3><div id="drinkProducts" class="products"></div></div>
+<div class="category"><h3>🥪 Essen</h3><div id="foodProducts" class="products"></div></div>
+</div>
+<div class="cart"><h3>Bestellung</h3><div id="cart"></div></div>
+<div class="actions"><button class="pay" id="payBtn">💶 Bezahlen</button><button class="cancel" id="stornoBtn">↩️ Storno</button></div>
+<div class="history"><h3>Vergangenheit</h3><div id="history"></div></div>
+</div>
+</section>
+
+<section id="managePage" class="hidden">
+<button class="back" id="backDash">← Zur Gästeliste</button>
+<div class="panel"><h2>Produkte verwalten</h2><p class="note">Produkte bleiben dauerhaft gespeichert. Alte Bestellungen bleiben auch nach Änderungen erhalten.</p>
+<button class="primary" id="addProductBtn">＋ Produkt hinzufügen</button><div id="productAdmin"></div></div>
+<div class="panel"><h2>Daten</h2><p class="note">Nur für Testzwecke: löscht Personen, Bestellungen und Produktänderungen.</p><button class="danger" id="resetBtn">Alle Testdaten löschen</button></div>
+</section>
+</div>
+
+<div id="personModal" class="modal hidden"><div class="dialog"><h2>Person hinzufügen</h2><label for="personName">Name / Bezeichnung</label><input id="personName" autocomplete="off" placeholder="z. B. Peter Müller oder Peter – Garten 42"><div class="dialog-actions"><button id="personCancel" class="secondary">Abbrechen</button><button id="personSave" class="primary">Speichern</button></div></div></div>
+
+<div id="productModal" class="modal hidden"><div class="dialog"><h2 id="productModalTitle">Produkt</h2>
+<label for="prodName">Name</label><input id="prodName" autocomplete="off">
+<div class="formgrid"><div><label for="prodPrice">Preis (€)</label><input id="prodPrice" inputmode="decimal"></div><div><label for="prodUnit">Verkaufseinheit</label><input id="prodUnit" placeholder="Glas, Flasche, Stück"></div><div><label for="prodPack">Gebinde</label><input id="prodPack" placeholder="z. B. 1-Liter-Flasche"></div><div><label for="prodYield">Ertrag / Inhalt</label><input id="prodYield" placeholder="z. B. 3 Gläser"></div></div>
+<label for="prodCat">Kategorie</label><select id="prodCat"><option value="drink">Getränke</option><option value="food">Essen</option></select>
+<div class="dialog-actions"><button id="productCancel" class="secondary">Abbrechen</button><button id="productSave" class="primary">Speichern</button></div></div></div>
+
+<div id="payModal" class="modal hidden"><div class="dialog"><h2>Bezahlen</h2><div id="paySummary"></div>
+<label for="tip">Stimmt so (€)</label><input id="tip" inputmode="decimal" value="0">
+<label for="given">Gegeben (€)</label><input id="given" inputmode="decimal">
+<div class="panel" style="margin-top:12px"><b>Rückgeld: <span id="change">0,00 €</span></b><div class="note">Wenn du bei „Stimmt so“ nichts einträgst, wird kein Trinkgeld berechnet. Rückgeld = Gegeben − Rechnungsbetrag − Stimmt so.</div></div>
+<div class="dialog-actions"><button id="payCancel" class="secondary">Abbrechen</button><button id="paySave" class="primary">Bezahlung speichern</button></div></div></div>
+
+<script>
+(function(){
+"use strict";
+var KEY="haus_sonnenschein_v6_2_ios";
+var defaults=[
+{id:"w1",name:"Wasser",price:.5,unit:"Flasche",pack:"0,33 l",yieldText:"1 Flasche",cat:"drink"},
+{id:"k1",name:"Kaffee",price:.5,unit:"Tasse",pack:"",yieldText:"1 Tasse",cat:"drink"},
+{id:"t1",name:"Tee",price:.5,unit:"Tasse",pack:"",yieldText:"1 Tasse",cat:"drink"},
+{id:"c1",name:"Chai Latte",price:.5,unit:"Tasse",pack:"30 Sachets",yieldText:"1 Tasse",cat:"drink"},
+{id:"cs1",name:"Capri-Sonne",price:.5,unit:"Stück",pack:"",yieldText:"1 Stück",cat:"drink"},
+{id:"cola",name:"Cola",price:1,unit:"Glas",pack:"1-Liter-Flasche",yieldText:"3 Gläser",cat:"drink"},
+{id:"fanta",name:"Fanta",price:1,unit:"Glas",pack:"1-Liter-Flasche",yieldText:"3 Gläser",cat:"drink"},
+{id:"sprite",name:"Sprite",price:1,unit:"Glas",pack:"1-Liter-Flasche",yieldText:"3 Gläser",cat:"drink"},
+{id:"saft",name:"Saft",price:1,unit:"Glas",pack:"1-Liter-Flasche",yieldText:"3 Gläser",cat:"drink"},
+{id:"bier",name:"Bier",price:1,unit:"Flasche",pack:"Kiste 27",yieldText:"27 Flaschen",cat:"drink"},
+{id:"sekt",name:"Sekt",price:1.5,unit:"Glas",pack:"Flasche",yieldText:"offen",cat:"drink"},
+{id:"toast",name:"Sandwich-Toast",price:1,unit:"Stück",pack:"",yieldText:"1 Toast",cat:"food"}];
+var data=load(),currentPersonId=null,currentProductId=null;
+function $(id){return document.getElementById(id)}
+function load(){
+  try{
+    var r=localStorage.getItem(KEY);
+    if(!r)r=localStorage.getItem("haus_sonnenschein_v6_1");
+    if(!r)r=localStorage.getItem("haus_sonnenschein_v6");
+    if(r){
+      var d=JSON.parse(r);
+      if(d.people&&d.products&&d.orders)return d;
+    }
+  }catch(e){}
+  return{people:[],products:defaults,orders:[]};
+}
+function save(){
+  try{
+    localStorage.setItem(KEY,JSON.stringify(data));
+    return true;
+  }catch(e){
+    alert("Die Daten konnten auf diesem Gerät nicht gespeichert werden. Bitte die Seite in Safari öffnen und erneut versuchen.");
+    return false;
+  }
+}
+function euro(n){return(Number(n)||0).toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"}
+function uid(p){return p+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function today(){return new Date().toISOString().slice(0,10)}
+function dateText(x){var d=new Date(x);return d.toLocaleDateString("de-DE")+" "+d.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function show(id){$(id).classList.remove("hidden")}function hide(id){$(id).classList.add("hidden")}
+function openModal(id){show(id)}function closeModal(id){hide(id)}
+function openOrder(pid){currentPersonId=pid;var p=data.people.find(function(x){return x.id===pid});if(!p)return;hide("dashboard");hide("managePage");show("orderPage");$("orderPerson").textContent=p.name;renderOrder()}
+function getOpen(pid){for(var i=0;i<data.orders.length;i++)if(data.orders[i].personId===pid&&data.orders[i].status==="open")return data.orders[i];return null}
+function total(o){return(o.items||[]).reduce(function(s,x){return s+x.price*x.qty},0)}
+function renderDashboard(){
+  var day=today(),sales=0,tips=0,open=0;
+  data.orders.forEach(function(o){
+    if(o.status==="open")open++;
+    if(o.status==="paid"&&o.paidAt&&o.paidAt.slice(0,10)===day){
+      sales+=o.subtotal||0;
+      tips+=o.tip||0;
+    }
+  });
+  $("salesToday").textContent=euro(sales);
+  $("tipsToday").textContent=euro(tips);
+  $("receivedToday").textContent=euro(sales+tips);
+  $("openCount").textContent=open;
+  var b=$("people");
+  b.innerHTML="";
+  if(!data.people.length){
+    b.innerHTML='<div class="empty">Noch keine Personen angelegt.</div>';
+    return;
+  }
+  data.people.forEach(function(p){
+    var o=getOpen(p.id);
+    var x=document.createElement("button");
+    x.className="person"+(o?"":" paid");
+    var name=document.createElement("span");
+    name.textContent=p.name;
+    var amount=document.createElement("span");
+    amount.className="amount";
+    amount.textContent=o?euro(total(o)):"bezahlt";
+    var badge=document.createElement("span");
+    badge.className="badge";
+    badge.textContent=o?"🟡":"🟢";
+    x.appendChild(name);
+    x.appendChild(amount);
+    x.appendChild(badge);
+    x.onclick=function(){openOrder(p.id)};
+    b.appendChild(x);
+  });
+}
+function renderProducts(){["drink","food"].forEach(function(cat){var b=$(cat==="drink"?"drinkProducts":"foodProducts");b.innerHTML="";var list=data.products.filter(function(p){return p.cat===cat});if(!list.length){b.innerHTML='<div class="empty">Keine Produkte</div>';return}list.forEach(function(p){var x=document.createElement("button");x.className="product";x.innerHTML="<strong>"+esc(p.name)+"</strong><small>"+euro(p.price)+" / "+esc(p.unit||"Einheit")+"</small>";x.onclick=function(){addProduct(p.id)};b.appendChild(x)})})}
+function addProduct(pid){var p=data.products.find(function(x){return x.id===pid});if(!p)return;var o=getOpen(currentPersonId);if(!o){o={id:uid("o"),personId:currentPersonId,createdAt:new Date().toISOString(),status:"open",items:[]};data.orders.push(o)}var it=o.items.find(function(x){return x.productId===pid});if(it)it.qty++;else o.items.push({productId:p.id,name:p.name,price:p.price,unit:p.unit,qty:1});save();renderOrder();renderDashboard()}
+function renderCart(){var b=$("cart");b.innerHTML="";var o=getOpen(currentPersonId);if(!o||!o.items.length){b.innerHTML='<div class="empty">Noch nichts bestellt.</div>';return}o.items.forEach(function(it,i){var x=document.createElement("div");x.className="line";x.innerHTML="<div><b>"+esc(it.name)+"</b><br><small>"+it.qty+" × "+euro(it.price)+"</small></div><div><b>"+euro(it.qty*it.price)+"</b> <button>−</button></div>";x.querySelector("button").onclick=function(){decrease(i)};b.appendChild(x)})}
+function decrease(i){var o=getOpen(currentPersonId);if(!o)return;if(o.items[i].qty>1)o.items[i].qty--;else o.items.splice(i,1);if(!o.items.length)data.orders=data.orders.filter(function(x){return x.id!==o.id});save();renderOrder();renderDashboard()}
+function renderHistory(){var b=$("history");b.innerHTML="";var list=data.orders.filter(function(o){return o.personId===currentPersonId&&o.status!=="open"}).sort(function(a,c){return new Date(c.createdAt)-new Date(a.createdAt)});if(!list.length){b.innerHTML='<div class="empty">Noch keine abgeschlossenen Vorgänge.</div>';return}list.forEach(function(o){var x=document.createElement("div");x.className="history-item";var lines=o.items.map(function(it){return it.qty+"× "+it.name}).join(", ");x.innerHTML="<b>"+(o.status==="paid"?"🟢 Bezahlt":"↩️ Storniert")+" · "+euro(o.subtotal||0)+"</b><br><small>"+dateText(o.createdAt)+" · "+esc(lines)+(o.tip?" · Trinkgeld "+euro(o.tip):"")+"</small>";b.appendChild(x)})}
+function renderOrder(){$("orderTotal").textContent=euro((getOpen(currentPersonId)&&total(getOpen(currentPersonId)))||0);renderProducts();renderCart();renderHistory()}
+function startPay(){var o=getOpen(currentPersonId);if(!o||!o.items.length){alert("Es gibt noch keine Bestellung.");return}$("paySummary").innerHTML="<p><b>Rechnungsbetrag: "+euro(total(o))+"</b></p>";$("tip").value="0";$("given").value=total(o).toFixed(2).replace(".",",");updateChange();openModal("payModal")}
+function num(v){return parseFloat(String(v).replace(",","."))||0}
+function updateChange(){var o=getOpen(currentPersonId);if(!o)return;var need=total(o)+num($("tip").value),given=num($("given").value);$("change").textContent=euro(Math.max(0,given-need))}
+function finishPay(){
+  var o=getOpen(currentPersonId);if(!o)return;
+  var sub=Math.round(total(o)*100)/100,tip=Math.max(0,Math.round(num($("tip").value)*100)/100),given=Math.max(0,Math.round(num($("given").value)*100)/100);
+  if(given+0.0001<sub+tip){alert("Der gegebene Betrag reicht nicht aus.");return}
+  o.subtotal=sub;o.tip=tip;o.paid=given;o.change=Math.round((given-sub-tip)*100)/100;o.status="paid";o.paidAt=new Date().toISOString();
+  if(!save())return;
+  closeModal("payModal");renderOrder();renderDashboard();
+}
+function storno(){var o=getOpen(currentPersonId);if(!o){alert("Es gibt keinen offenen Auftrag.");return}if(!confirm("Diese Bestellung wirklich stornieren? Sie bleibt in der Historie erhalten."))return;o.subtotal=total(o);o.status="cancelled";o.cancelledAt=new Date().toISOString();save();renderOrder();renderDashboard()}
+function renderAdmin(){var b=$("productAdmin");b.innerHTML="";data.products.forEach(function(p){var x=document.createElement("div");x.className="line";x.innerHTML="<div><b>"+esc(p.name)+"</b><br><small>"+euro(p.price)+" · "+esc(p.unit||"")+" · "+esc(p.pack||"")+" · "+esc(p.yieldText||"")+"</small></div><div><button>✏️</button> <button>🗑️</button></div>";x.querySelectorAll("button")[0].onclick=function(){editProduct(p.id)};x.querySelectorAll("button")[1].onclick=function(){deleteProduct(p.id)};b.appendChild(x)})}
+function fill(p){$("prodName").value=p?p.name:"";$("prodPrice").value=p?String(p.price).replace(".",","):"";$("prodUnit").value=p?p.unit:"";$("prodPack").value=p?p.pack:"";$("prodYield").value=p?p.yieldText:"";$("prodCat").value=p?p.cat:"drink"}
+function editProduct(id){var p=data.products.find(function(x){return x.id===id});currentProductId=id;$("productModalTitle").textContent="Produkt bearbeiten";fill(p);openModal("productModal")}
+function saveProduct(){var n=$("prodName").value.trim(),pr=num($("prodPrice").value);if(!n){alert("Bitte einen Namen eingeben.");return}var p=currentProductId?data.products.find(function(x){return x.id===currentProductId}):null;if(!p){p={id:uid("p")};data.products.push(p)}p.name=n;p.price=pr;p.unit=$("prodUnit").value.trim();p.pack=$("prodPack").value.trim();p.yieldText=$("prodYield").value.trim();p.cat=$("prodCat").value;save();closeModal("productModal");renderAdmin();renderProducts()}
+function deleteProduct(id){if(!confirm("Produkt aus dem Verkauf entfernen? Alte Bestellungen bleiben erhalten."))return;data.products=data.products.filter(function(p){return p.id!==id});save();renderAdmin();renderProducts()}
+function resetAll(){if(!confirm("Wirklich alle Testdaten löschen?"))return;localStorage.removeItem(KEY);data=load();renderDashboard();renderAdmin();alert("Testdaten gelöscht.")}
+function bind(id,event,fn){var el=$(id);if(el)el.addEventListener(event,fn,false)}
+window.addEventListener("error",function(){
+  var n=document.getElementById("jsError");
+  if(n)n.classList.remove("hidden");
+});
+function init(){
+  bind("addPersonBtn","click",function(){$("personName").value="";openModal("personModal");setTimeout(function(){$("personName").focus()},50)});
+  bind("personCancel","click",function(){closeModal("personModal")});
+  bind("personSave","click",function(){var n=$("personName").value.trim();if(!n){alert("Bitte einen Namen eingeben.");return}data.people.push({id:uid("g"),name:n,createdAt:new Date().toISOString()});save();closeModal("personModal");renderDashboard()});
+  bind("backPeople","click",function(){hide("orderPage");show("dashboard");currentPersonId=null;renderDashboard()});
+  bind("manageBtn","click",function(){hide("dashboard");hide("orderPage");show("managePage");renderAdmin()});
+  bind("backDash","click",function(){hide("managePage");show("dashboard");renderDashboard()});
+  bind("addProductBtn","click",function(){currentProductId=null;$("productModalTitle").textContent="Produkt hinzufügen";fill(null);openModal("productModal")});
+  bind("productCancel","click",function(){closeModal("productModal")});
+  bind("productSave","click",saveProduct);
+  bind("payBtn","click",startPay);bind("stornoBtn","click",storno);
+  bind("payCancel","click",function(){closeModal("payModal")});bind("paySave","click",finishPay);
+  bind("tip","input",updateChange);bind("given","input",updateChange);bind("resetBtn","click",resetAll);
+  renderDashboard();
+}
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init,false)}else{init()}
+})();
+</script>
+</body>
+</html>
