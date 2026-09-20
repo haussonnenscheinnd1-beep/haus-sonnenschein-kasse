@@ -133,9 +133,10 @@ function getOpen(pid){for(var i=0;i<data.orders.length;i++)if(data.orders[i].per
 function localBackup(){try{localStorage.setItem(LOCAL_KEY,JSON.stringify(data))}catch(e){}}
 function api(path,options){
   options=options||{}; options.headers=options.headers||{};
+  // Supabase publishable keys are sent via the apikey header.
+  // Do not send the sb_publishable key as a Bearer token.
   options.headers["apikey"]=SUPABASE_KEY;
-  options.headers["Authorization"]="Bearer "+SUPABASE_KEY;
-  options.headers["Content-Type"]="application/json";
+  if(options.body) options.headers["Content-Type"]="application/json";
   return fetch(SUPABASE_URL+path,options).then(function(r){
     return r.text().then(function(t){
       var body=t?JSON.parse(t):null;
