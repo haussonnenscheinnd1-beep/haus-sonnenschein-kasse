@@ -1,0 +1,11 @@
+{
+  "name": "Haus Sonnenschein Kasse – Offline",
+  "short_name": "Haus Sonnenschein",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#242321",
+  "theme_color": "#242321",
+  "description": "Offline-Kasse für Haus Sonnenschein",
+  "lang": "de"
+}
