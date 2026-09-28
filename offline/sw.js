@@ -1,4 +1,4 @@
-const CACHE_NAME = "haus-sonnenschein-offline-v3";
+const CACHE_NAME = "haus-sonnenschein-offline-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
