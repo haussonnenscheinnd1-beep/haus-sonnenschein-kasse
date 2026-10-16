@@ -337,7 +337,7 @@ function renderDashboard(){
   $("salesToday").textContent=euro(sales);
   $("tipsToday").textContent=euro(tips);
   $("receivedToday").textContent=euro(cash+tips);
-  $("openCount").textContent=open;
+  $("openCount").textContent=euro(open);
   $("creditTotal").textContent=euro(creditTotal);
   var manualCash=$("cashManualDisplay"), manualInput=$("cashManualInput");
   if(manualCash){
